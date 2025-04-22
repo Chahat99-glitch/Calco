@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calco Calculator</title>
+
+    <!-- Google Font: Fredoka One -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React and ReactDOM via CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind Configuration -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'fredoka': ['"Fredoka One"', 'cursive'],
+              'sans': ['ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif'], // Ensure sans is defined
+            },
+            colors: {
+              // Define base colors for themes using CSS variables
+              'theme-bg': 'var(--bg-color)', // This will now be UNDER the image
+              'theme-text': 'var(--text-color)',
+              'theme-card': 'var(--card-color)', // Main calculator body bg
+              'theme-display': 'var(--display-color)', // Display bg
+              'theme-border': 'var(--border-color)', // Border color (often black)
+              'theme-shadow': 'var(--shadow-color)', // Shadow color (often black)
+              'theme-accent': 'var(--accent-color)', // Operators
+              'theme-accent-text': 'var(--accent-text-color)',
+              'theme-special': 'var(--special-color)', // C, +/-, %
+              'theme-special-text': 'var(--special-text-color)',
+              'theme-number': 'var(--number-color)', // Number button bg
+              'theme-number-text': 'var(--number-text-color)',
+            },
+            boxShadow: {
+              // Neubrutalist hard shadow
+              'hard': '4px 4px 0px var(--shadow-color)',
+               'hard-sm': '2px 2px 0px var(--shadow-color)',
+            },
+            borderWidth: {
+              '3': '3px',
+            },
+          },
+        },
+      }
+    </script>
+
+    <!-- Base CSS and Theme Variables -->
+    <style type="text/tailwindcss">
+        /* Apply base styles */
+        body {
+            /* Base styles first */
+            @apply text-theme-text font-sans transition-colors duration-200 ease-in-out 
+            /* Background Image */
+            bg-[url('images/crushed_bg.jpg')] bg-cover bg-center bg-no-repeat bg-fixed 
+            /* Fallback background color (will be underneath image) */
+            bg-theme-bg;
+
+             /* Use system fonts by default */
+            font-family: theme('fontFamily.sans');
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh; /* Ensure body takes full viewport height */
+        }
+
+        /* Define CSS variables for themes */
+        :root {
+            /* Default Theme: Playful Pink/Yellow */
+            --bg-color: #FFF0F5; /* Lavender Blush - NOW A FALLBACK */
+            --text-color: #1F2937; /* Dark Gray - MAY NEED ADJUSTMENT FOR CONTRAST */
+            --card-color: #FFD700; /* Gold */
+            --display-color: #FFFFFF; /* White */
+            --border-color: #000000; /* Black */
+            --shadow-color: #000000; /* Black */
+            --accent-color: #FF69B4; /* Hot Pink */
+            --accent-text-color: #000000; /* Black */
+            --special-color: #87CEEB; /* Sky Blue */
+            --special-text-color: #000000; /* Black */
+            --number-color: #FFFFFF; /* White */
+            --number-text-color: #000000; /* Black */
+        }
+
+        body.theme-jungle {
+            --bg-color: #F0FFF4; /* Honeydew - Fallback */
+            --text-color: #1F2937; /* Dark Gray */
+            --card-color: #90EE90; /* Light Green */
+            /* ... other theme colors ... */
+             --display-color: #FFFFFF;
+             --border-color: #000000;
+             --shadow-color: #000000;
+             --accent-color: #FF8C00;
+             --accent-text-color: #000000;
+             --special-color: #4682B4;
+             --special-text-color: #FFFFFF;
+             --number-color: #FFFFFF;
+             --number-text-color: #000000;
+        }
+
+        body.theme-ocean {
+             --bg-color: #E0FFFF; /* Light Cyan - Fallback */
+             --text-color: #1F2937; /* Dark Gray */
+             --card-color: #7DF9FF; /* Electric Blue */
+            /* ... other theme colors ... */
+              --display-color: #FFFFFF;
+              --border-color: #000000;
+              --shadow-color: #000000;
+              --accent-color: #FF4500;
+              --accent-text-color: #000000;
+              --special-color: #FFFF00;
+              --special-text-color: #000000;
+              --number-color: #FFFFFF;
+              --number-text-color: #000000;
+        }
+
+         body.theme-mono {
+             --bg-color: #F5F5F5; /* White Smoke - Fallback */
+             --text-color: #000000; /* Black */
+             --card-color: #FFFFFF; /* White */
+             /* ... other theme colors ... */
+              --display-color: #FFFFFF;
+              --border-color: #000000;
+              --shadow-color: #000000;
+              --accent-color: #A9A9A9;
+              --accent-text-color: #000000;
+              --special-color: #D3D3D3;
+              --special-text-color: #000000;
+              --number-color: #FFFFFF;
+              --number-text-color: #000000;
+         }
+
+        /* Style scrollbars (optional, keep it simple) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            /* Make track semi-transparent to show bg image */
+            background: rgba(0, 0, 0, 0.1); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--accent-color);
+            border: 1px solid var(--border-color);
+             border-radius: 4px; /* Added rounding */
+        }
+    </style>
+</head>
+<body>
+    <!-- Root element for React -->
+    <div id="root"></div>
+
+    <!-- React Application Code (type="text/babel") -->
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React; // Destructure React hooks
+
+        // --- Calculator Logic (Unchanged) ---
+        const MAX_DISPLAY_LENGTH = 16;
+        const calculate = (num1, num2, operator) => { /* ... JAVASCRIPT LOGIC ... */
+            const number1 = parseFloat(num1);
+            const number2 = parseFloat(num2);
+            if (isNaN(number1) || isNaN(number2)) return NaN;
+            switch (operator) {
+                case '+': return number1 + number2;
+                case '−': return number1 - number2;
+                case '×': return number1 * number2;
+                case '÷': return number2 === 0 ? Infinity : number1 / number2;
+                case 'xʸ': return Math.pow(number1, number2);
+                default: return number2;
+            }
+        };
+        const calculateScientific = (num, operation) => { /* ... JAVASCRIPT LOGIC ... */
+            const number = parseFloat(num);
+            if (isNaN(number)) return NaN;
+            switch(operation) {
+                case 'sin': return Math.sin(number * Math.PI / 180);
+                case 'cos': return Math.cos(number * Math.PI / 180);
+                case 'tan': return Math.tan(number * Math.PI / 180);
+                case 'log': return Math.log10(number);
+                case 'ln': return Math.log(number);
+                case '√': return Math.sqrt(number);
+                case 'x²': return Math.pow(number, 2);
+                case 'π': return Math.PI;
+                case 'e': return Math.E;
+                default: return number;
+            }
+        };
+        const formatNumber = (num) => { /* ... JAVASCRIPT LOGIC ... */
+            if (num === Infinity || num === -Infinity) return "Error";
+            if (isNaN(num)) return "Error";
+            let numStr = String(num);
+             if (numStr.length > MAX_DISPLAY_LENGTH) {
+                 if (Math.abs(num) > 1e15 || (Math.abs(num) < 1e-15 && num !== 0)) {
+                     numStr = num.toExponential(MAX_DISPLAY_LENGTH - 7); 
+                 } else {
+                     const decimalPointIndex = numStr.indexOf('.');
+                     if (decimalPointIndex !== -1) {
+                         numStr = numStr.substring(0, MAX_DISPLAY_LENGTH);
+                     } else {
+                          numStr = num.toExponential(MAX_DISPLAY_LENGTH - 7);
+                     }
+                 }
+             }
+             return numStr.slice(0, MAX_DISPLAY_LENGTH);
+        };
+
+
+        // --- React Components (Unchanged) ---
+
+        function Button({ label, onClick, type = 'number', className = '' }) { /* ... JSX ... */
+            // Neubrutalist Button Style
+            const baseStyle = `
+                flex items-center justify-center aspect-square
+                border-3 border-theme-border shadow-hard
+                rounded-lg sm:rounded-xl
+                active:shadow-none active:translate-x-[2px] active:translate-y-[2px]
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-accent
+                transition-all duration-100 ease-in-out
+                text-lg sm:text-xl font-bold 
+            `;
+            let typeStyle = '';
+            switch (type) {
+                case 'operator':
+                case 'sci': 
+                    typeStyle = 'bg-theme-accent text-theme-accent-text';
+                    break;
+                case 'special':
+                    typeStyle = 'bg-theme-special text-theme-special-text';
+                    break;
+                case 'number':
+                default:
+                    typeStyle = 'bg-theme-number text-theme-number-text';
+                    break;
+            }
+             if (label === '=') { typeStyle = 'bg-theme-accent text-theme-accent-text'; }
+             if (label === 'AC') { typeStyle = 'bg-theme-special text-theme-special-text'; }
+
+            return (
+                <button onClick={onClick} className={`${baseStyle} ${typeStyle} ${className}`} aria-label={label}>
+                    {label}
+                </button>
+            );
+         }
+
+        function Display({ value }) { /* ... JSX ... */
+             const getFontSize = (text) => {
+                 const length = text?.length || 0;
+                 if (length > 14) return 'text-xl'; 
+                 if (length > 11) return 'text-2xl';
+                 if (length > 8) return 'text-3xl';
+                 return 'text-4xl sm:text-5xl'; 
+             };
+             return (
+                 <div className="bg-theme-display border-3 border-theme-border rounded-lg p-4 mb-4 text-right overflow-hidden min-h-[4.5rem] sm:min-h-[5.5rem] flex items-center justify-end">
+                     <span
+                         className={`block w-full break-all text-theme-text font-mono ${getFontSize(value)} transition-all duration-100`}
+                         role="textbox"
+                         aria-label="Calculator Display"
+                     >
+                         {value || '0'} 
+                     </span>
+                 </div>
+             );
+         }
+
+        function Calculator() { /* ... State and Handlers ... */
+            const [isScientific, setIsScientific] = useState(false);
+            const [currentValue, setCurrentValue] = useState('0');
+            const [previousValue, setPreviousValue] = useState(null);
+            const [operator, setOperator] = useState(null);
+            const [waitingForOperand, setWaitingForOperand] = useState(false);
+            
+            // --- Logic Handlers (Callbacks - Unchanged) ---
+             const handleNumberClick = useCallback((number) => { if (currentValue === "Error") return; if (currentValue.length >= MAX_DISPLAY_LENGTH && !waitingForOperand) return; if (waitingForOperand) { setCurrentValue(number); setWaitingForOperand(false); } else { setCurrentValue(currentValue === '0' ? number : currentValue + number); } }, [currentValue, waitingForOperand]);
+             const handleDecimalClick = useCallback(() => { if (currentValue === "Error" || currentValue.includes('.')) return; if (waitingForOperand) { setCurrentValue('0.'); setWaitingForOperand(false); } else { if (currentValue.length >= MAX_DISPLAY_LENGTH) return; setCurrentValue(currentValue + '.'); } }, [currentValue, waitingForOperand]);
+             const handleOperatorClick = useCallback((op) => { if (currentValue === "Error") return; if (previousValue !== null && operator && !waitingForOperand) { const result = calculate(previousValue, currentValue, operator); const formattedResult = formatNumber(result); if (formattedResult === "Error") { setCurrentValue("Error"); setPreviousValue(null); setOperator(null); setWaitingForOperand(true); return; } setCurrentValue(formattedResult); setPreviousValue(formattedResult); } else { setPreviousValue(currentValue); } setOperator(op); setWaitingForOperand(true); }, [currentValue, previousValue, operator, waitingForOperand]);
+             const handleEqualsClick = useCallback(() => { if (currentValue === "Error" || !operator || previousValue === null) return; const result = calculate(previousValue, currentValue, operator); const formattedResult = formatNumber(result); setCurrentValue(formattedResult); setPreviousValue(null); setOperator(null); setWaitingForOperand(formattedResult === "Error"); }, [currentValue, previousValue, operator]);
+             const handleAllClear = useCallback(() => { setCurrentValue('0'); setPreviousValue(null); setOperator(null); setWaitingForOperand(false); }, []);
+             const handleSignChange = useCallback(() => { if (currentValue === '0' || currentValue === "Error") return; setCurrentValue( currentValue.startsWith('-') ? currentValue.substring(1) : '-' + currentValue ); }, [currentValue]);
+             const handlePercentClick = useCallback(() => { if (currentValue === "Error") return; const numericValue = parseFloat(currentValue); if (isNaN(numericValue)) return; let result; if (previousValue && operator && ['+', '−'].includes(operator)) { const percentageOfPrevious = calculate(previousValue, numericValue / 100, '×'); setCurrentValue(formatNumber(percentageOfPrevious)); setWaitingForOperand(false); } else { result = calculate(numericValue, '100', '÷'); setCurrentValue(formatNumber(result)); setPreviousValue(null); setOperator(null); setWaitingForOperand(false); } }, [currentValue, previousValue, operator]);
+             const handleScientificClick = useCallback((operation) => { if (operation === 'π' || operation === 'e') { const constValue = calculateScientific(null, operation); setCurrentValue(formatNumber(constValue)); setWaitingForOperand(false); return; } if (currentValue === "Error") return; const result = calculateScientific(currentValue, operation); const formattedResult = formatNumber(result); setCurrentValue(formattedResult); setPreviousValue(null); setOperator(null); setWaitingForOperand(formattedResult === "Error"); }, [currentValue]);
+
+            const basicButtons = [ { label: 'AC', action: handleAllClear, type: 'special' }, { label: '+/-', action: handleSignChange, type: 'special' }, { label: '%', action: handlePercentClick, type: 'special' }, { label: '÷', action: () => handleOperatorClick('÷'), type: 'operator' }, { label: '7', action: () => handleNumberClick('7') }, { label: '8', action: () => handleNumberClick('8') }, { label: '9', action: () => handleNumberClick('9') }, { label: '×', action: () => handleOperatorClick('×'), type: 'operator' }, { label: '4', action: () => handleNumberClick('4') }, { label: '5', action: () => handleNumberClick('5') }, { label: '6', action: () => handleNumberClick('6') }, { label: '−', action: () => handleOperatorClick('−'), type: 'operator' }, { label: '1', action: () => handleNumberClick('1') }, { label: '2', action: () => handleNumberClick('2') }, { label: '3', action: () => handleNumberClick('3') }, { label: '+', action: () => handleOperatorClick('+'), type: 'operator' }, { label: '0', action: () => handleNumberClick('0'), className: 'col-span-2' }, { label: '.', action: handleDecimalClick }, { label: '=', action: handleEqualsClick, type: 'operator' }, ];
+            const scientificButtons = [ { label: 'sin', action: () => handleScientificClick('sin'), type: 'sci' }, { label: 'cos', action: () => handleScientificClick('cos'), type: 'sci' }, { label: 'tan', action: () => handleScientificClick('tan'), type: 'sci' }, { label: 'log', action: () => handleScientificClick('log'), type: 'sci' }, { label: 'ln', action: () => handleScientificClick('ln'), type: 'sci' }, { label: '√', action: () => handleScientificClick('√'), type: 'sci' }, { label: 'x²', action: () => handleScientificClick('x²'), type: 'sci' }, { label: 'xʸ', action: () => handleOperatorClick('xʸ'), type: 'sci' }, { label: 'π', action: () => handleScientificClick('π'), type: 'sci' }, { label: 'e', action: () => handleScientificClick('e'), type: 'sci' }, ];
+            const gridColsClass = isScientific ? 'grid-cols-5' : 'grid-cols-4';
+            const buttonGap = 'gap-3 sm:gap-4';
+            
+            /* ... JSX Return ... */
+             return (
+                 <div className="bg-theme-card p-4 sm:p-6 border-3 border-theme-border shadow-hard rounded-xl w-full max-w-xs sm:max-w-sm md:max-w-md">
+                     <div className="flex justify-end mb-3">
+                         <button
+                             onClick={() => setIsScientific(!isScientific)}
+                             className={`px-3 py-1 text-xs rounded-md border-2 border-theme-border font-semibold transition-colors duration-150 ${ isScientific ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-special text-theme-special-text' }`} >
+                             {isScientific ? 'Sci' : 'Basic'}
+                         </button>
+                     </div>
+                     <Display value={currentValue} />
+                      <div className={`grid ${gridColsClass} ${buttonGap} mt-4`}>
+                         {isScientific && scientificButtons.map((btn) => ( <Button key={btn.label} label={btn.label} onClick={btn.action} type={btn.type} className={btn.className} /> ))}
+                          {basicButtons.map((btn) => ( <Button key={btn.label} label={btn.label} onClick={btn.action} type={btn.type} className={btn.className} /> ))}
+                      </div>
+                 </div>
+             );
+         }
+
+        function ThemeSwitcher({ themes, currentTheme, setTheme }) { /* ... JSX ... */
+            return (
+              <div className="flex space-x-2 p-1 bg-theme-card border-2 border-theme-border rounded-lg shadow-hard-sm">
+                {themes.map((theme) => (
+                  <button
+                    key={theme.name}
+                    title={theme.label}
+                    onClick={() => setTheme(theme.name)}
+                    className={`w-6 h-6 rounded-md border-2 border-theme-border focus:outline-none transition-all duration-150 ease-in-out ${ currentTheme === theme.name ? 'ring-2 ring-offset-1 ring-theme-border transform scale-95' : 'hover:scale-105' }`}
+                    style={{ backgroundColor: theme.color }}
+                    aria-label={`Switch to ${theme.label} theme`}
+                  />
+                ))}
+              </div>
+            );
+          }
+
+        function Header({ children }) { /* ... JSX ... */
+           return (
+             <header className="w-full flex justify-between items-center p-4 max-w-md mx-auto mb-4">
+               <h1 className="text-4xl sm:text-5xl font-fredoka text-theme-text drop-shadow-[2px_2px_0px_var(--shadow-color)]">
+                 Calco
+               </h1>
+               <div>{children}</div>
+             </header>
+           );
+         }
+
+        function App() { /* ... State and useEffect ... */
+             const themes = [
+                 { name: 'theme-default', label: 'Candy', color: '#FF69B4' }, 
+                 { name: 'theme-jungle', label: 'Jungle', color: '#90EE90' },
+                 { name: 'theme-ocean', label: 'Ocean', color: '#7DF9FF' },
+                 { name: 'theme-mono', label: 'Mono', color: '#A9A9A9' },
+             ];
+             const [currentTheme, setCurrentTheme] = useState(() => {
+                  const savedTheme = localStorage.getItem('calco-neubrutalist-theme');
+                  return themes.some(t => t.name === savedTheme) ? savedTheme : themes[0].name;
+             });
+
+             useEffect(() => {
+                 // Remove other theme classes
+                 themes.forEach(theme => {
+                    if (theme.name !== 'theme-default') { // Keep :root styles always potentially active
+                        document.body.classList.remove(theme.name);
+                    }
+                 });
+                 // Add the current theme class ONLY if it's not the default
+                 if (currentTheme !== 'theme-default') {
+                    document.body.classList.add(currentTheme);
+                 }
+                 localStorage.setItem('calco-neubrutalist-theme', currentTheme);
+             }, [currentTheme]); 
+
+             /* ... JSX Return ... */
+            return (
+                // Added backdrop filter potential here for readability
+                <div className="flex flex-col items-center justify-between min-h-screen p-4"> 
+                    <Header>
+                        <ThemeSwitcher
+                            themes={themes}
+                            currentTheme={currentTheme}
+                            setTheme={setCurrentTheme}
+                        />
+                    </Header>
+                    <main className="flex-grow flex items-center justify-center w-full">
+                        {/* Optional: Add a semi-transparent backdrop to calculator for readability */}
+                        {/* <div className="backdrop-blur-sm bg-white/10 p-1 rounded-xl"> */}
+                            <Calculator />
+                        {/* </div> */}
+                    </main>
+                    <footer className="text-center text-xs opacity-90 mt-6 pb-2 text-theme-text font-semibold backdrop-blur-sm bg-[var(--bg-color)]/30 px-2 rounded"> {/* Added backdrop for footer */}
+                    </footer>
+                </div>
+            );
+         }
+
+        // Render the App component
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+
+    </script>
+
+</body>
+</html>
